@@ -18,6 +18,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.storage.StorageLevel
 import org.json4s.JsonDSL._
 import org.json4s.jackson.JsonMethods._
 
@@ -26,7 +27,7 @@ object KmeansApp {
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
     Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
     if (args.length < 4) {
-      println("usage: <input> <output> <numClusters> <maxIterations> <runs> - optional")
+      println("usage: <input> <output> <numClusters> <maxIterations> <storageLevel> <runs> - optional")
       System.exit(0)
     }
     val conf = new SparkConf
@@ -37,13 +38,15 @@ object KmeansApp {
     val output = args(1)
     val K = args(2).toInt
     val maxIterations = args(3).toInt
+    val storageLevel = args(4)
     val runs = calculateRuns(args)
 
     // Load and parse the data
     // val parsedData = sc.textFile(input)
     var start = System.currentTimeMillis();
     val data = sc.textFile(input)
-    val parsedData = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).cache()
+    var sl:StorageLevel = StorageLevel.fromString(storageLevel)
+    val parsedData = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).persist(sl)
     val loadTime = (System.currentTimeMillis() - start).toDouble / 1000.0
 
     // Cluster the data into two classes using KMeans
@@ -71,7 +74,7 @@ object KmeansApp {
   }
 
   def calculateRuns(args: Array[String]): Int = {
-    if (args.length > 4) args(4).toInt
+    if (args.length > 5) args(5).toInt
     else 1
   }
 }
