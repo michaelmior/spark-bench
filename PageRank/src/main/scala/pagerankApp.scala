@@ -56,12 +56,7 @@ object pagerankApp {
     val resetProb = args(5).toDouble
 	val storageLevel=args(6)
 	
-	var sl:StorageLevel=StorageLevel.MEMORY_ONLY;
-	if(storageLevel=="MEMORY_AND_DISK_SER")
-		sl=StorageLevel.MEMORY_AND_DISK_SER
-	else if(storageLevel=="MEMORY_AND_DISK")
-		sl=StorageLevel.MEMORY_AND_DISK
-		
+    var sl:StorageLevel = StorageLevel.fromString(storageLevel)
     val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, sl, sl)
 
 
