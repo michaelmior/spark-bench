@@ -32,6 +32,8 @@ import org.apache.spark.rdd._
 
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.graphx.impl.{ EdgePartitionBuilder, GraphImpl }
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
 
 object pagerankApp {
 
@@ -61,9 +63,12 @@ object pagerankApp {
 
 
 	
+    var start = System.currentTimeMillis();
     val staticRanks = graph.staticPageRank(maxIterations, resetProb).vertices
+    val computeTime = (System.currentTimeMillis() - start).toDouble / 1000.0
     staticRanks.saveAsTextFile(output);
 
+    println(compact(render(Map("computeTime" -> computeTime))))
     sc.stop();
 
   }
