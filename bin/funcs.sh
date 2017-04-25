@@ -123,6 +123,12 @@ function set_gendata_opt() {
   if [ ! -z "$SPARK_DEFAULT_PARALLELISM" ]; then
     SPARK_OPT="${SPARK_OPT} --conf spark.default.parallelism=${SPARK_DEFAULT_PARALLELISM}"
   fi
+  if [ ! -z "$SPARK_EVENTLOG_ENABLED" ]; then
+    SPARK_OPT="${SPARK_OPT} --conf spark.eventLog.enabled=true"
+  fi
+  if [ ! -z "$SPARK_EVENTLOG_DIR" ]; then
+    SPARK_OPT="${SPARK_OPT} --conf spark.eventLog.dir=${SPARK_EVENTLOG_DIR}"
+  fi
   YARN_OPT=
   if [ "$MASTER" = "yarn" ]; then
     if [ ! -z "$SPARK_EXECUTOR_INSTANCES" ]; then

@@ -62,9 +62,14 @@ export SPARK_EXECUTOR_CORES=1
 
 # Storage levels, see http://spark.apache.org/docs/latest/api/java/org/apache/spark/api/java/StorageLevels.html
 # - STORAGE_LEVEL, set MEMORY_AND_DISK, MEMORY_AND_DISK_SER, MEMORY_ONLY, MEMORY_ONLY_SER, or DISK_ONLY
-STORAGE_LEVEL=MEMORY_AND_DISK
+# STORAGE_LEVEL=MEMORY_ONLY
+STORAGE_LEVEL=MEMORY_ONLY
 
 # for data generation
 NUM_OF_PARTITIONS=2
 # for running
 NUM_TRIALS=1
+
+# Event logging
+SPARK_EVENTLOG_ENABLED=1
+SPARK_EVENTLOG_DIR="hdfs://${master}:8020/spark-logs"
