@@ -169,7 +169,7 @@ function RM() {
     else
        ${HADOOP_HOME}/bin/hdfs dfs -test -d $tmpdir;
        if [ $? == 1 ]; then  return 1; fi
-      ${HADOOP_HOME}/bin/hdfs dfs -rmr $tmpdir
+      ${HADOOP_HOME}/bin/hdfs dfs -rm -r $tmpdir
     fi
 }
 function MKDIR() {  
