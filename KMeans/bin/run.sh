@@ -9,7 +9,7 @@ echo "========== running ${APP} bench =========="
 
 
 # pre-running
-DU ${INPUT_HDFS} SIZE 
+DU ${INPUT_HDFS} SIZE
 
 JAR="${DIR}/target/KMeansApp-1.0.jar"
 CLASS="KmeansApp"
@@ -24,10 +24,17 @@ for((i=0;i<${NUM_TRIALS};i++)); do
     START_TS=`get_start_ts`;
     START_TIME=`timestamp`
 
+    before_stats=$(get_all_stats "$MC_LIST")
     echo_and_run sh -c " ${SPARK_HOME}/bin/spark-submit --class $CLASS --master ${APP_MASTER} ${YARN_OPT} ${SPARK_OPT} ${SPARK_RUN_OPT} $JAR ${OPTION} 2>&1|tee ${BENCH_NUM}/${APP}_run_${START_TS}.dat"
     res=$?;
+    after_stats=$(get_all_stats "$MC_LIST")
+
     json_log="out/${STORAGE_LEVEL}-${NUM_OF_POINTS}.json"
-    add_event_log $(cat $json_log) > $json_log
+    json=$(cat $json_log)
+    json=$(add_event_log $json)
+    json=$(add_to_json "$json" beforeStats "$before_stats")
+    json=$(add_to_json "$json" afterStats "$after_stats")
+    echo "$json" > $json_log
 
     END_TIME=`timestamp`
     get_config_fields >> ${BENCH_REPORT}

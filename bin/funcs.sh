@@ -153,13 +153,50 @@ function set_run_opt() {
 
 function echo_and_run() { echo "$@" ; "$@" ; }
 
+function get_node_stats() {
+  local node=$1
+  # XXX This assumes the HDFS path is the same on all nodes
+  local hdfs_path=`xmlstarlet sel -t -v "configuration/property[name='dfs.datanode.data.dir']/value" ${HADOOP_HOME}/etc/hadoop/hdfs-site.xml | sed 's_file://__'`
+  local hdfs_mount=`df --output=source "$hdfs_path" | sed 1d`
+  local iostat=`ssh $node iostat $hdfs_mount | grep -A1 '^Device:' | tr -s ' ' | cut -d' ' -f2-`
+  local ndata=`echo "$iostat" | head -1 | wc -w`
+  local json=`for f in $(seq 1 $ndata); do echo "$iostat" | cut -d' ' -f $f | xargs echo; done | sed 's/^\(.*\) \(.*\)$/"\1":\2/; $ ! s/$/,/'`
+  echo "{\"iostat\":{$json}}"
+}
+
+function get_all_stats() {
+  local mc_list="$1"
+  local num_nodes=`echo "$mc_list" | awk '{ print NF }'`
+  local nc=0
+  echo "{"
+  for node in ${mc_list}; do
+    nc=$((nc + 1))
+    echo "\"$node\":"
+    get_node_stats $node
+    if [[ "$nc" -ne "$num_nodes" ]]; then echo ,; fi
+  done
+  echo "}"
+}
+
+function add_to_json() {
+  local json="$1"
+  local key="$2"
+  local value="$3"
+
+  json=`echo $json | sed '$ s/.$//'`
+  json="$json, \"$key\":$value}"
+
+  echo "$json"
+}
+
 function add_event_log() {
-  local json=$1
+  local json="$1"
   local appId=`echo $json | sed -n 's/.*"applicationId"\s*:\s*\"\([^\"]*\)\".*/\1/p'`
   if [ ! -z "$SPARK_EVENTLOG_ENABLED" ]; then
     local event_log=`${HADOOP_HOME}/bin/hdfs dfs -cat /spark-logs/$appId | sed '$ ! s/$/,/'`
     json=`echo $json | sed '$ s/.$//'`
     json="$json, \"eventLog\":[$event_log]}"
+    json=$(add_to_json "$json" "eventLog" "[$event_log]")
   fi
 
   echo $json
