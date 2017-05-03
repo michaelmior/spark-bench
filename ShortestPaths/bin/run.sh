@@ -15,7 +15,7 @@ DU ${INPUT_HDFS} SIZE
 
 JAR="${DIR}/target/ShortestPathsApp-1.0.jar"
 CLASS="src.main.scala.ShortestPathsApp"
-OPTION="${INOUT_SCHEME}${INPUT_HDFS} ${INOUT_SCHEME}${OUTPUT_HDFS} ${NUM_OF_PARTITIONS} ${numV}"
+OPTION="${INOUT_SCHEME}${INPUT_HDFS} ${INOUT_SCHEME}${OUTPUT_HDFS} ${NUM_OF_PARTITIONS} ${numV} ${STORAGE_LEVEL}"
 
 echo "opt ${OPTION}"
 

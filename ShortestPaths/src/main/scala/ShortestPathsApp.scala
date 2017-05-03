@@ -32,13 +32,15 @@ import org.apache.spark.graphx.lib._
 import org.apache.spark.graphx.util.GraphGenerators
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel
+import org.json4s.JsonDSL._
+import org.json4s.jackson.JsonMethods._
 
 
  object ShortestPathsApp {
  
     def main(args: Array[String]) {
-    if (args.length < 3) {
-	  println("usage: <input> <output> <minEdge> <numV> ")      
+    if (args.length < 4) {
+      println("usage: <input> <output> <minEdge> <numV> <StorageLevel>")
       System.exit(0)
     }
 		Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
@@ -52,8 +54,12 @@ import org.apache.spark.storage.StorageLevel
     val output = args(1)
 	val minEdge= args(2).toInt
 	val numVertices= args(3).toInt
-		
-	val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, StorageLevel.MEMORY_AND_DISK, StorageLevel.MEMORY_AND_DISK)	
+	val storageLevel= args(4)
+
+    var sl:StorageLevel = StorageLevel.fromString(storageLevel)
+	val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, sl, sl)
+    graph.edges.setName("SPEdges")
+    graph.vertices.setName("SPVertices")
 	
 	//val numVertices= graph.vertices.count()
 	//val edges = sc.textFile(input).map { line =>
