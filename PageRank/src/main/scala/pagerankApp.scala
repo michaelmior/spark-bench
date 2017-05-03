@@ -1,12 +1,11 @@
-
 /*
- * (C) Copyright IBM Corp. 2015 
+ * (C) Copyright IBM Corp. 2015
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at 
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0 
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +14,8 @@
  * limitations under the License.
  */
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package src.main.scala
+
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import org.apache.spark.{ SparkContext, SparkConf}
@@ -42,36 +37,35 @@ object pagerankApp {
       println("usage: <input> <output> <minEdge> <maxIterations> <tolerance> <resetProb> <StorageLevel>")
       System.exit(0)
     }
-	Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
+    Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
     Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
-	
+
     val conf = new SparkConf
     conf.setAppName("Spark PageRank Application")
     val sc = new SparkContext(conf)
-	//conf.registerKryoClasses(Array(classOf[pagerankApp] ))
-		
+
     val input = args(0)
     val output = args(1)
     val minEdge = args(2).toInt
     val maxIterations = args(3).toInt
     val tolerance = args(4).toDouble
     val resetProb = args(5).toDouble
-	val storageLevel=args(6)
-	
+    val storageLevel=args(6)
+
     var sl:StorageLevel = StorageLevel.fromString(storageLevel)
     val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, sl, sl)
 
 
-	
+
     var start = System.currentTimeMillis();
     val staticRanks = graph.staticPageRank(maxIterations, resetProb).vertices
     val computeTime = (System.currentTimeMillis() - start).toDouble / 1000.0
     staticRanks.saveAsTextFile(output);
 
     println(compact(render(Map("computeTime" -> computeTime))))
-    sc.stop();
-
+    sc.stop()
   }
+
   def pagerank_usingSampledata(sc: SparkContext, input: String, output: String,
                                maxIterations: Integer, tolerance: Double, resetProb: Double) {
     val graph = GraphLoader.edgeListFile(sc, input + "/followers.txt")
@@ -90,6 +84,5 @@ object pagerankApp {
     }
     // Print the result
     println(ranksByUsername.collect().mkString("\n"))
-
   }
 }

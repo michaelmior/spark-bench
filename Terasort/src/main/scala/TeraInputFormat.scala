@@ -64,8 +64,8 @@ class TeraInputFormat extends FileInputFormat[Array[Byte], Array[Byte]] {
   // Sort the file pieces since order matters.
   override def listStatus(job: JobContext): List[FileStatus] = {
     val listing = super.listStatus(job)
-    val sortedListing= listing.sortWith{ (lhs, rhs) => { 
-      lhs.getPath().compareTo(rhs.getPath()) < 0 
+    val sortedListing= listing.sortWith{ (lhs, rhs) => {
+      lhs.getPath().compareTo(rhs.getPath()) < 0
     } }
     sortedListing.toList
   }
@@ -121,5 +121,4 @@ class TeraInputFormat extends FileInputFormat[Array[Byte], Array[Byte]] {
     override def getCurrentValue() : Array[Byte] = value
     override def getProgress() : Float = offset / length
   }
-
 }

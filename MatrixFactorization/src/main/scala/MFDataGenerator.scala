@@ -1,12 +1,11 @@
-
 /*
- * (C) Copyright IBM Corp. 2015 
+ * (C) Copyright IBM Corp. 2015
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at 
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0 
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,8 +14,7 @@
  * limitations under the License.
  */
 
-
-package src.main.scala;
+package src.main.scala
 
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
@@ -77,7 +75,7 @@ object MFDataGenerator {
 
     val conf = new SparkConf().setAppName("MFDataGenerator")
     val sc = new SparkContext(conf)
-	 
+
     val A = DoubleMatrix.randn(m, rank)
     val B = DoubleMatrix.randn(rank, n)
     val z = 1 / scala.math.sqrt(scala.math.sqrt(rank))
@@ -90,34 +88,10 @@ object MFDataGenerator {
       scala.math.round(.99 * m * n)).toInt
     val rand = new Random()
     val mn = m * n
-    
-/*
-    val canonicalFilename="/mnt/nfs_dir/tmp_data/tmp"
-    val file = new File(canonicalFilename)
-    file.delete()
-    if(!file.exists()) {
-        file.createNewFile();
-    } 
-    val bw = new BufferedWriter(new FileWriter(file))
-    1 to mn foreach {i=> bw.write(i.toString+"\n");}
-    bw.flush()
-    bw.close()
-*/
-
-    //val shuffled = rand.shuffle(1 to mn toList)
-   // val shuffled = 1 to mn toList
-
-    //val omega = shuffled.slice(0, sampSize)
-    //val ordered = omega.sortWith(_ < _).toArray
-
-/*    val my_rdd=sc.textFile("file://"+canonicalFilename,400) */
     val my_rdd=sc.makeRDD(1 to mn, numPar)
     my_rdd.persist(StorageLevel.MEMORY_AND_DISK)
     val trainData: RDD[(Int, Int, Double)] = my_rdd
         .map(x => (fullData.indexRows(x.toInt - 1), fullData.indexColumns(x.toInt - 1), fullData.get(x.toInt - 1)))
-    //    trainData.persist(StorageLevel.MEMORY_AND_DISK)
-    //val trainData: RDD[(Int, Int, Double)] = sc.parallelize(ordered)
-      //.map(x => (fullData.indexRows(x - 1), fullData.indexColumns(x - 1), fullData.get(x - 1)))
 
     // optionally add gaussian noise
     if (noise) {
@@ -126,18 +100,6 @@ object MFDataGenerator {
 
     trainData.map(x => x._1 + "," + x._2 + "," + x._3).saveAsTextFile(outputPath)
 
-    // optionally generate testing data
- /*   if (test) {
-      val testSampSize = scala.math
-        .min(scala.math.round(sampSize * testSampFact),scala.math.round(mn - sampSize)).toInt
-      val testOmega = shuffled.slice(sampSize, sampSize + testSampSize)
-      val testOrdered = testOmega.sortWith(_ < _).toArray
-      val testData: RDD[(Int, Int, Double)] = sc.parallelize(testOrdered)
-        .map(x => (fullData.indexRows(x - 1), fullData.indexColumns(x - 1), fullData.get(x - 1)))
-      testData.map(x => x._1 + "," + x._2 + "," + x._3).saveAsTextFile(outputPath)
-    }*/
-
     sc.stop()
-
   }
 }

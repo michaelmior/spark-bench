@@ -60,8 +60,8 @@ class TeraOutputFormat extends FileOutputFormat[Array[Byte], Array[Byte]] {
   def getFinalSync(job : JobContext ) : Boolean =
     job.getConfiguration().getBoolean(TeraOutputFormat.FINAL_SYNC_ATTRIBUTE, false);
 
-  class TeraRecordWriter(val out : FSDataOutputStream, val job: JobContext) 
-  extends RecordWriter[Array[Byte], Array[Byte]] {
+  class TeraRecordWriter(val out : FSDataOutputStream, val job: JobContext)
+      extends RecordWriter[Array[Byte], Array[Byte]] {
     var finalSync = getFinalSync(job)
 
     def write(key : Array[Byte], value : Array[Byte]) = {
@@ -101,7 +101,7 @@ class TeraOutputFormat extends FileOutputFormat[Array[Byte], Array[Byte]] {
     }
   }
 
-  def getRecordWriter(job : TaskAttemptContext) 
+  def getRecordWriter(job : TaskAttemptContext)
   : RecordWriter[Array[Byte], Array[Byte]] = {
     val file : Path = getDefaultWorkFile(job, "");
     val fs : FileSystem = file.getFileSystem(job.getConfiguration());

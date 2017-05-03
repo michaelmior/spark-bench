@@ -68,7 +68,7 @@ Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
   }
 
   def validate(sc : SparkContext, dataset: RDD[(Array[Byte], Array[Byte])]) : Unit = {
-    val output : RDD[(Unsigned16, Array[Byte], Array[Byte])] = 
+    val output : RDD[(Unsigned16, Array[Byte], Array[Byte])] =
       dataset.mapPartitions( (iter) => {
 
         val sum = new Unsigned16
@@ -93,7 +93,7 @@ Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
 
           if (pos == 0) {
             key.copyToArray(min, 0, 10)
-          } 
+          }
           pos += 1
           prev = key
         }

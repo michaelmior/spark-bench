@@ -1,12 +1,11 @@
-
 /*
- * (C) Copyright IBM Corp. 2015 
+ * (C) Copyright IBM Corp. 2015
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at 
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0 
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,13 +16,12 @@
 
 package src.main.scala
 
-//import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 //import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
-//import org.apache.spark.examples.streaming.StreamingExamples
+
 // scalastyle:off
 /** Analyses a streaming dataset of web page views. This class demonstrates several types of
   * operators available in Spark streaming.
@@ -46,17 +44,14 @@ object PageViewStream {
     }
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
     Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
-    
-	//StreamingExamples.setStreamingLogLevels()
-	val metric = args(0)
+
+    val metric = args(0)
     val host = args(1)
     val port = args(2).toInt
 
-	val sparkConf = new SparkConf().setAppName("PageViewStream")
+    val sparkConf = new SparkConf().setAppName("PageViewStream")
     // Create the context
-	val ssc = new StreamingContext(sparkConf, Seconds(1))	
-//    val ssc = new StreamingContext("local[2]", "PageViewStream", Seconds(1),
-  //    System.getenv("SPARK_HOME"), StreamingContext.jarOfClass(this.getClass).toSeq)
+    val ssc = new StreamingContext(sparkConf, Seconds(1))
 
     // Create a ReceiverInputDStream on target host:port and convert each line to a PageView
     val pageViews = ssc.socketTextStream(host, port)

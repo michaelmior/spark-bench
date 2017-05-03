@@ -1,12 +1,12 @@
 
 /*
- * (C) Copyright IBM Corp. 2015 
+ * (C) Copyright IBM Corp. 2015
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at 
+ * You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0 
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,30 +33,28 @@ import org.apache.spark.graphx.util.GraphGenerators
 import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel
 
- object ConnectedComponentApp {
+object ConnectedComponentApp {
 
-    def main(args: Array[String]) {
-Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
-Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
+  def main(args: Array[String]) {
+    Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
+    Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
     if (args.length < 4) {
-      println("usage: <input> <output> <minEdge> <numV> ")      
+      println("usage: <input> <output> <minEdge> <numV> ")
       System.exit(0)
     }
     val conf = new SparkConf
     conf.setAppName("Spark ConnectedComponent Application")
     val sc = new SparkContext(conf)
-    
-	val input = args(0) 
+
+    val input = args(0)
     val output = args(1)
-	val minEdge= args(2).toInt
-	
-	val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, StorageLevel.MEMORY_AND_DISK, StorageLevel.MEMORY_AND_DISK)	
-	val res = graph.connectedComponents().vertices
-   	
-	res.saveAsTextFile(output);
-	
+    val minEdge= args(2).toInt
+
+    val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, StorageLevel.MEMORY_AND_DISK, StorageLevel.MEMORY_AND_DISK)
+    val res = graph.connectedComponents().vertices
+
+    res.saveAsTextFile(output);
+
     sc.stop();
-    
   }
-  
 }
