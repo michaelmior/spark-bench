@@ -74,10 +74,13 @@ import org.json4s.jackson.JsonMethods._
 //		numv=500
 //	}	
 	val landmarks = Seq(1,numVertices ).map(_.toLong)
+    var start = System.currentTimeMillis();
     val results=ShortestPaths.run(graph,landmarks).vertices
+    val computeTime = (System.currentTimeMillis() - start).toDouble / 1000.0
 	
 	results.saveAsTextFile(output)
 	
+    println(compact(render(Map("computeTime" -> computeTime))))
     sc.stop();
     
   }
