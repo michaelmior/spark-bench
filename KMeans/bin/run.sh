@@ -20,8 +20,7 @@ setup
 set_gendata_opt
 for((i=0;i<${NUM_TRIALS};i++)); do
     RM ${OUTPUT_HDFS}
-    # (Optional procedure): free page cache, dentries and inodes.
-    # purge_data "${MC_LIST}"
+    purge_data "${MC_LIST}"
     START_TS=`get_start_ts`;
     START_TIME=`timestamp`
 
