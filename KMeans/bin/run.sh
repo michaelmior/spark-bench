@@ -24,19 +24,11 @@ for((i=0;i<${NUM_TRIALS};i++)); do
     START_TS=`get_start_ts`;
     START_TIME=`timestamp`
 
-    before_stats=$(get_all_stats "$MC_LIST")
-    echo_and_run sh -c " ${SPARK_HOME}/bin/spark-submit --class $CLASS --master ${APP_MASTER} ${YARN_OPT} ${SPARK_OPT} ${SPARK_RUN_OPT} $JAR ${OPTION} 2>&1|tee ${BENCH_NUM}/${APP}_run_${START_TS}.dat"
+    mkdir -p "out/$i"
+    json_log="out/$i/${STORAGE_LEVEL}-${NUM_OF_POINTS}.json"
+    run_with_stats $json_log sh -c " ${SPARK_HOME}/bin/spark-submit --class $CLASS --master ${APP_MASTER} ${YARN_OPT} ${SPARK_OPT} ${SPARK_RUN_OPT} $JAR $json_log ${OPTION} 2>&1|tee ${BENCH_NUM}/${APP}_run_${START_TS}.dat" $json_log
     res=$?;
-    after_stats=$(get_all_stats "$MC_LIST")
 
-    json_log="out/${STORAGE_LEVEL}-${NUM_OF_POINTS}.json"
-    json=$(cat $json_log)
-    json=$(add_event_log "$json")
-    input_size=$(${HADOOP_HOME}/bin/hdfs dfs -ls ${INPUT_HDFS}/part-* | awk '{ sum += $5 } END { print sum }')
-    json=$(add_to_json "$json" inputSize "$input_size")
-    json=$(add_to_json "$json" beforeStats "$before_stats")
-    json=$(add_to_json "$json" afterStats "$after_stats")
-    echo "$json" > $json_log
 
     END_TIME=`timestamp`
     get_config_fields >> ${BENCH_REPORT}

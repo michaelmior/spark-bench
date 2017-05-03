@@ -153,6 +153,23 @@ function set_run_opt() {
 
 function echo_and_run() { echo "$@" ; "$@" ; }
 
+function run_with_stats() {
+  local json_log=$1
+  shift
+
+  before_stats=$(get_all_stats "$MC_LIST")
+  echo_and_run "$@"
+  after_stats=$(get_all_stats "$MC_LIST")
+  json=$(cat $json_log)
+  json=$(add_event_log "$json")
+  input_size=$(${HADOOP_HOME}/bin/hdfs dfs -ls ${INPUT_HDFS}/part-* | awk '{ sum += $5 } END { print sum }')
+  input_size=$((input_size / 1024))
+  json=$(add_to_json "$json" inputSize "$input_size")
+  json=$(add_to_json "$json" beforeStats "$before_stats")
+  json=$(add_to_json "$json" afterStats "$after_stats")
+  echo "$json" > $json_log
+}
+
 function get_node_stats() {
   local node=$1
   # XXX This assumes the HDFS path is the same on all nodes
