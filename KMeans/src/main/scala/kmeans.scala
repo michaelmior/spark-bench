@@ -71,7 +71,15 @@ object KmeansApp {
     val WSSSE = clusters.computeCost(parsedData)
     val testTime = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    val jsonStr = compact(render(Map("loadTime" -> loadTime, "trainingTime" -> trainingTime, "testTime" -> testTime, "saveTime" -> saveTime)))
+    val jsonStr = compact(render(Map[String, org.json4s.JsonAST.JValue](
+      "applicationId" -> sc.applicationId,
+      "timing" -> Map(
+        "loadTime" -> loadTime,
+        "trainingTime" -> trainingTime,
+        "testTime" -> testTime,
+        "saveTime" -> saveTime
+      )
+    )))
     new PrintWriter("out/" + storageLevel + "-" + parsedData.count + ".json") { write(jsonStr); close }
     println("Within Set Sum of Squared Errors = " + WSSSE)
     sc.stop()

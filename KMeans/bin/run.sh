@@ -27,6 +27,8 @@ for((i=0;i<${NUM_TRIALS};i++)); do
 
     echo_and_run sh -c " ${SPARK_HOME}/bin/spark-submit --class $CLASS --master ${APP_MASTER} ${YARN_OPT} ${SPARK_OPT} ${SPARK_RUN_OPT} $JAR ${OPTION} 2>&1|tee ${BENCH_NUM}/${APP}_run_${START_TS}.dat"
     res=$?;
+    json_log="out/${STORAGE_LEVEL}-${NUM_OF_POINTS}.json"
+    add_event_log $(cat $json_log) > $json_log
 
     END_TIME=`timestamp`
     get_config_fields >> ${BENCH_REPORT}

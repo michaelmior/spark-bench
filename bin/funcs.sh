@@ -153,6 +153,18 @@ function set_run_opt() {
 
 function echo_and_run() { echo "$@" ; "$@" ; }
 
+function add_event_log() {
+  local json=$1
+  local appId=`echo $json | sed -n 's/.*"applicationId"\s*:\s*\"\([^\"]*\)\".*/\1/p'`
+  if [ ! -z "$SPARK_EVENTLOG_ENABLED" ]; then
+    local event_log=`${HADOOP_HOME}/bin/hdfs dfs -cat /spark-logs/$appId | sed '$ ! s/$/,/'`
+    json=`echo $json | sed '$ s/.$//'`
+    json="$json, \"eventLog\":[$event_log]}"
+  fi
+
+  echo $json
+}
+
 function RM() {
   tmpdir=$1;
   if [ $# -lt 1 ] || [ -z "$tmpdir" ]; then
