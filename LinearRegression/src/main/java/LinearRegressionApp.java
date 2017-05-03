@@ -40,31 +40,17 @@ public class LinearRegressionApp {
 
         // Load and parse data
 	long start = System.currentTimeMillis();
-        JavaRDD<String> data = sc.textFile(input);
-        
-        JavaRDD<LabeledPoint> parsedData = data.map(
-                new Function<String, LabeledPoint>() {
-                    public LabeledPoint call(String line) {                        
-                        return LabeledPoint.parse(line);
-                    }
+    JavaRDD<String> data = sc.textFile(input);
+
+    JavaRDD<LabeledPoint> parsedData = data.map(
+            new Function<String, LabeledPoint>() {
+                public LabeledPoint call(String line) {
+                    return LabeledPoint.parse(line);
                 }
-        );
-        //parsedData.cache();
-        /*JavaRDD<LabeledPoint> parsedData = data.map(
-                new Function<String, LabeledPoint>() {
-                    public LabeledPoint call(String line) {
-                        String[] parts = line.split(",");
-                        String[] features = parts[1].split(" ");
-                        double[] v = new double[features.length];
-                        for (int i = 0; i < features.length - 1; i++) {
-                            v[i] = Double.parseDouble(features[i]);
-                        }
-                        return new LabeledPoint(Double.parseDouble(parts[0]), Vectors.dense(v));
-                    }
-                }
-        );*/
-        RDD<LabeledPoint> parsedRDD_Data=JavaRDD.toRDD(parsedData);
-        parsedRDD_Data.cache();
+            }
+    );
+    RDD<LabeledPoint> parsedRDD_Data=JavaRDD.toRDD(parsedData);
+    parsedRDD_Data.cache();
 	double loadTime = (double)(System.currentTimeMillis() - start) / 1000.0;
 
     // Building the model

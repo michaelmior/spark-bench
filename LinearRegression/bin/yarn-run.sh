@@ -15,7 +15,6 @@ DIR=`cd $bin/../; pwd`
 
 DU ${INPUT_HDFS} SIZE 
 
-#JAR="${DIR}/target/scala-2.10/LinearRegression-app_2.10-1.0.jar"
 CLASS="LinearRegression.src.main.java.LinearRegressionApp"
 OPTION=" ${INPUT_HDFS} ${OUTPUT_HDFS} ${MAX_ITERATION} "
 
