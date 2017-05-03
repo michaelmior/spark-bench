@@ -15,14 +15,10 @@
  * limitations under the License.
  */
 
-
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package src.main.scala
+
+import java.io.PrintWriter
+
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import org.apache.spark.{SparkContext,SparkConf}
@@ -60,29 +56,17 @@ import org.json4s.jackson.JsonMethods._
 	val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, sl, sl)
     graph.edges.setName("SPEdges")
     graph.vertices.setName("SPVertices")
-	
-	//val numVertices= graph.vertices.count()
-	//val edges = sc.textFile(input).map { line =>
-    //  val fields = line.split("::")
-    //  Edge(fields(0).toLong , fields(1).toLong, fields(2).toDouble)
-      
-    //}
-	//var numv=100;
-	//if( numVertices <= 20000){
-//		numv=numVertices/10
-//	}else{
-//		numv=500
-//	}	
-	val landmarks = Seq(1,numVertices ).map(_.toLong)
+
+	val landmarks = Seq(1, numVertices).map(_.toLong)
     var start = System.currentTimeMillis();
     val results=ShortestPaths.run(graph,landmarks).vertices
     val computeTime = (System.currentTimeMillis() - start).toDouble / 1000.0
 	
 	results.saveAsTextFile(output)
 	
-    println(compact(render(Map("computeTime" -> computeTime))))
+    val jsonStr = compact(render(Map("computeTime" -> computeTime)))
+    new PrintWriter("out/" + storageLevel + "-" + numVertices + ".json") { write(jsonStr); close }
+
     sc.stop();
-    
   }
-  
 }

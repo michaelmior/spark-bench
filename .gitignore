@@ -25,6 +25,7 @@ PageRank/target
 PCA/target
 PregelOperation/target
 ShortestPaths/target
+ShortestPaths/out
 SQL/target
 Streaming/target
 StronglyConnectedComponent/target
