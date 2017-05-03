@@ -15,22 +15,22 @@
 
 ############### common functions ################
 function timestamp() {
-    sec=`date +%s`
-    nanosec=`date +%N`
-    
-    # %N is not supported in OSX. Use gdate from `coreutils` suite instead.
-    unamestr=`uname`
-    if [ "${unamestr}" = "Darwin" ]; then
-        nanosec=`gdate  +%N`
-    fi
-    
-    tmp=`expr $sec \* 1000 `
-    msec=`expr $nanosec / 1000000 `
-    echo `expr $tmp + $msec`
+  sec=`date +%s`
+  nanosec=`date +%N`
+
+  # %N is not supported in OSX. Use gdate from `coreutils` suite instead.
+  unamestr=`uname`
+  if [ "${unamestr}" = "Darwin" ]; then
+    nanosec=`gdate  +%N`
+  fi
+
+  tmp=`expr $sec \* 1000 `
+  msec=`expr $nanosec / 1000000 `
+  echo `expr $tmp + $msec`
 }
 
 function get_report_field_name() {
-        echo -n "Apptype,start_ts,duration,size,throughput,resStatus"
+  echo -n "Apptype,start_ts,duration,size,throughput,resStatus"
 }
 
 function gen_report() {
@@ -39,45 +39,43 @@ function gen_report() {
     local start=$2
     local end=$3
     local size=$4
-	local start_ts=$5
+    local start_ts=$5
     local res=$6
     which bc > /dev/null 2>&1
     if [ $? -eq 1 ]; then
-        echo "\"bc\" utility missing. Please install it to generate proper report."
-        return 1
+      echo "\"bc\" utility missing. Please install it to generate proper report."
+      return 1
     fi
     local size=`echo "scale=6;$size/1024/1024"|bc`
-	local duration=`echo "scale=6;($end-$start)/1000"|bc`
+    local duration=`echo "scale=6;($end-$start)/1000"|bc`
     local tput=`echo "scale=6;$size/$duration"|bc`
     echo -n "$type,${start_ts},$duration,$size,$tput,$res"
-
 }
 
 function check_dir() {
-    local dir=$1
-    if [ -z "$dir" ];then
-        echo "WARN: payload missing."
-        return 1
-    fi
-    if [ ! -d "$dir" ];then
-        echo "ERROR: directory $dir does not exist."
-        exit 1
-    fi
+  local dir=$1
+  if [ -z "$dir" ];then
+    echo "WARN: payload missing."
+    return 1
+  fi
+  if [ ! -d "$dir" ];then
+    echo "ERROR: directory $dir does not exist."
+    exit 1
+  fi
 }
 
 #usage purge_date "${MC_LIST}"
 function purge_data() {
-	local mc_list="$1"	
-    if [ -z "${mc_list}" ];then
-        return 1
-    fi
-	cmd="echo 3 >/proc/sys/vm/drop_caches"; 
-	#echo ${mc_list}
-	for nn in ${mc_list}; do 
-	#echo $nn
-	ssh  -t $nn "sudo sh -c \"$cmd\""; 
-	done;
-	echo "data purged on ${mc_list}"
+  local mc_list="$1"
+  if [ -z "${mc_list}" ];then
+      return 1
+  fi
+  cmd="echo 3 >/proc/sys/vm/drop_caches";
+
+  for nn in ${mc_list}; do
+      ssh  -t $nn "sudo sh -c \"$cmd\"";
+  done
+  echo "data purged on ${mc_list}"
 }
 
 function get_start_ts() {
@@ -144,7 +142,6 @@ function set_gendata_opt() {
     if [ ! -z "$YARN_DEPLOY_MODE" ]; then
       YARN_OPT="${YARN_OPT} --deploy-mode ${YARN_DEPLOY_MODE}"
     fi
-#echo "YARN_OPTS $YARN_OPT"
   fi
 }
 
@@ -156,76 +153,76 @@ function set_run_opt() {
 
 function echo_and_run() { echo "$@" ; "$@" ; }
 
+function RM() {
+  tmpdir=$1;
+  if [ $# -lt 1 ] || [ -z "$tmpdir" ]; then
+    return 1;
+  fi
+  if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
+   if [ ! -d "${tmpdir:7}" ]; then return 1;    fi
+   /bin/rm -r ${tmpdir:7};
+  else
+    ${HADOOP_HOME}/bin/hdfs dfs -test -d $tmpdir;
+    if [ $? == 1 ]; then  return 1; fi
+    ${HADOOP_HOME}/bin/hdfs dfs -rm -r $tmpdir
+  fi
+}
 
+function MKDIR() {
+  tmpdir=$1;
+  if [ $# -lt 1 ] || [ -z "$tmpdir" ]; then
+    return 1;
+  fi
+  if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
+    /bin/mkdir -p ${tmpdir:7};
+  else
+    ${HADOOP_HOME}/bin/hdfs dfs -mkdir -p $tmpdir
+  fi
+}
 
-function RM() { 
-    tmpdir=$1;
-    if [ $# -lt 1 ] || [ -z "$tmpdir" ]; then
-        return 1;
-    fi
-    if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
-       if [ ! -d "${tmpdir:7}" ]; then return 1;    fi
-       /bin/rm -r ${tmpdir:7}; 
-    else
-       ${HADOOP_HOME}/bin/hdfs dfs -test -d $tmpdir;
-       if [ $? == 1 ]; then  return 1; fi
-      ${HADOOP_HOME}/bin/hdfs dfs -rm -r $tmpdir
-    fi
+function DU() {
+   local tmpdir=$1;
+   if [ -z "$tmpdir" ] || [ $# -lt 2 ]; then
+     return 1
+   fi
+   local  __resultvar=$2
+   if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
+     if [ ! -d "${tmpdir:7}" ]; then return 1; fi
+     local myresult=`/usr/bin/du -b "${tmpdir:7}"|awk '{print $1}'`;
+   else
+     ${HADOOP_HOME}/bin/hdfs dfs -test -d $tmpdir;
+     if [ $? == 1 ]; then  return 1; fi
+     local myresult=`${HADOOP_HOME}/bin/hdfs dfs -du -s $tmpdir|awk '{print $1}'`;
+   fi
+   eval $__resultvar="'$myresult'"
 }
-function MKDIR() {  
-    tmpdir=$1;
-    if [ $# -lt 1 ] || [ -z "$tmpdir" ]; then
-        return 1;
-    fi
-    if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
-       /bin/mkdir -p ${tmpdir:7};
-    else
-      ${HADOOP_HOME}/bin/hdfs dfs -mkdir -p $tmpdir
-    fi
-}
-function DU() { 
-    local tmpdir=$1;
-    if [ -z "$tmpdir" ] || [ $# -lt 2 ]; then
-        return 1;
-    fi
-    local  __resultvar=$2
-    if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
-       if [ ! -d "${tmpdir:7}" ]; then return 1;    fi
-       local myresult=`/usr/bin/du -b "${tmpdir:7}"|awk '{print $1}'`;
-    else
-       ${HADOOP_HOME}/bin/hdfs dfs -test -d $tmpdir;
-       if [ $? == 1 ]; then  return 1; fi
-       local myresult=`${HADOOP_HOME}/bin/hdfs dfs -du -s $tmpdir|awk '{print $1}'`;
-    fi
-    eval $__resultvar="'$myresult'"
 
+function CPFROM() {
+  if [ $# -lt 2 ]; then return 1; fi
+  src=$1; dst=$2
+  if [ -z "$src" ]; then
+    return 1;
+  fi
+  if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
+    if [ ! -d "${src:7}" ]; then echo "src dir should start with file:///";return 1;    fi
+    /bin/cp  ${src:7}/* ${dst:7}
+  else
+    if [ ! -d "${src:8}" ]; then return 1;    fi
+    ${HADOOP_HOME}/bin/hdfs dfs -copyFromLocal  ${src:8}/* $dst
+  fi
 }
- 
-function CPFROM() { 
-    if [ $# -lt 2 ]; then return 1; fi
-    src=$1; dst=$2;
-    if [ -z "$src" ]; then
-        return 1;
-    fi
-    if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
-        if [ ! -d "${src:7}" ]; then echo "src dir should start with file:///";return 1;    fi
-        /bin/cp  ${src:7}/* ${dst:7}
-    else
-       if [ ! -d "${src:8}" ]; then return 1;    fi
-      ${HADOOP_HOME}/bin/hdfs dfs -copyFromLocal  ${src:8}/* $dst
-    fi
-}
-function  CPTO() { 
-    if [ $# -lt 2 ]; then return 1; fi
-    src=$1; dst=$2;
-    if [ -z "$src" ]; then
-        return 1;
-    fi
-    if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
-        /bin/cp -r $src $dst
-    else
-       ${HADOOP_HOME}/bin/hdfs dfs -test -d $src;
-       if [ $? == 1 ]; then  return 1; fi
-      ${HADOOP_HOME}/bin/hdfs dfs -copyToLocal  $src $dst
-    fi
+
+function  CPTO() {
+  if [ $# -lt 2 ]; then return 1; fi
+  src=$1; dst=$2
+  if [ -z "$src" ]; then
+    return 1;
+  fi
+  if [ ! -z `echo $DATA_HDFS | grep "^file://"` ]; then
+    /bin/cp -r $src $dst
+  else
+    ${HADOOP_HOME}/bin/hdfs dfs -test -d $src;
+    if [ $? == 1 ]; then  return 1; fi
+    ${HADOOP_HOME}/bin/hdfs dfs -copyToLocal  $src $dst
+  fi
 }
