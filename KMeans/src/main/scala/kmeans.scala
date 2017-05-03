@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import java.io.PrintWriter
+
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
 import org.apache.spark.mllib.linalg.Vectors
@@ -47,6 +49,7 @@ object KmeansApp {
     val data = sc.textFile(input)
     var sl:StorageLevel = StorageLevel.fromString(storageLevel)
     val parsedData = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).persist(sl)
+    parsedData.setName("KMInput")
     val loadTime = (System.currentTimeMillis() - start).toDouble / 1000.0
 
     // Cluster the data into two classes using KMeans
@@ -68,7 +71,8 @@ object KmeansApp {
     val WSSSE = clusters.computeCost(parsedData)
     val testTime = (System.currentTimeMillis() - start).toDouble / 1000.0
 
-    println(compact(render(Map("loadTime" -> loadTime, "trainingTime" -> trainingTime, "testTime" -> testTime, "saveTime" -> saveTime))))
+    val jsonStr = compact(render(Map("loadTime" -> loadTime, "trainingTime" -> trainingTime, "testTime" -> testTime, "saveTime" -> saveTime)))
+    new PrintWriter("out/" + storageLevel + "-" + parsedData.count + ".json") { write(jsonStr); close }
     println("Within Set Sum of Squared Errors = " + WSSSE)
     sc.stop()
   }

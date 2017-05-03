@@ -16,6 +16,7 @@ common/target
 ConnectedComponent/target
 DecisionTree/target
 KMeans/target
+KMeans/out
 LabelPropagation/target
 LinearRegression/target
 LogisticRegression/target
