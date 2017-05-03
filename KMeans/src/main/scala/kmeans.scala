@@ -28,19 +28,20 @@ object KmeansApp {
   def main(args: Array[String]) {
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
     Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
-    if (args.length < 4) {
-      println("usage: <input> <output> <numClusters> <maxIterations> <storageLevel> <runs> - optional")
+    if (args.length < 5) {
+      println("usage: <logFile> <input> <output> <numClusters> <maxIterations> <storageLevel> <runs> - optional")
       System.exit(0)
     }
     val conf = new SparkConf
     conf.setAppName("Spark KMeans Example")
     val sc = new SparkContext(conf)
 
-    val input = args(0)
-    val output = args(1)
-    val K = args(2).toInt
-    val maxIterations = args(3).toInt
-    val storageLevel = args(4)
+    val logFile = args(0)
+    val input = args(1)
+    val output = args(2)
+    val K = args(3).toInt
+    val maxIterations = args(4).toInt
+    val storageLevel = args(5)
     val runs = calculateRuns(args)
 
     // Load and parse the data
@@ -75,18 +76,16 @@ object KmeansApp {
       "applicationId" -> sc.applicationId,
       "timing" -> Map(
         "loadTime" -> loadTime,
-        "trainingTime" -> trainingTime,
-        "testTime" -> testTime,
-        "saveTime" -> saveTime
+        "trainingTime" -> trainingTime
       )
     )))
-    new PrintWriter("out/" + storageLevel + "-" + parsedData.count + ".json") { write(jsonStr); close }
+    new PrintWriter(logFile) { write(jsonStr); close }
     println("Within Set Sum of Squared Errors = " + WSSSE)
     sc.stop()
   }
 
   def calculateRuns(args: Array[String]): Int = {
-    if (args.length > 5) args(5).toInt
+    if (args.length > 6) args(6).toInt
     else 1
   }
 }
