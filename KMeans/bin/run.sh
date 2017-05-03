@@ -31,7 +31,9 @@ for((i=0;i<${NUM_TRIALS};i++)); do
 
     json_log="out/${STORAGE_LEVEL}-${NUM_OF_POINTS}.json"
     json=$(cat $json_log)
-    json=$(add_event_log $json)
+    json=$(add_event_log "$json")
+    input_size=$(${HADOOP_HOME}/bin/hdfs dfs -ls ${INPUT_HDFS}/part-* | awk '{ sum += $5 } END { print sum }')
+    json=$(add_to_json "$json" inputSize "$input_size")
     json=$(add_to_json "$json" beforeStats "$before_stats")
     json=$(add_to_json "$json" afterStats "$after_stats")
     echo "$json" > $json_log
