@@ -18,12 +18,9 @@ package src.main.scala
 
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
-import org.apache.spark.{SparkContext,SparkConf}
-import org.apache.spark.SparkContext._
-import org.apache.spark.graphx._
-import org.apache.spark.graphx.lib._
+import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.graphx.{Graph, GraphLoader, PartitionStrategy, VertexId}
 import org.apache.spark.graphx.util.GraphGenerators
-import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel
 
 object PregelOperationApp {
@@ -43,13 +40,17 @@ object PregelOperationApp {
     val output = args(1)
     val minEdge = args(2).toInt
 
-    val loadedgraph = GraphLoader.edgeListFile(sc, input, true, minEdge, StorageLevel.MEMORY_AND_DISK, StorageLevel.MEMORY_AND_DISK).partitionBy(PartitionStrategy.RandomVertexCut)
+    val loadedgraph = GraphLoader.edgeListFile(sc, input, true, minEdge,
+      StorageLevel.MEMORY_AND_DISK, StorageLevel.MEMORY_AND_DISK)
+        .partitionBy(PartitionStrategy.RandomVertexCut)
 
     val graph: Graph[Int, Double] =loadedgraph.mapEdges(e => e.attr.toDouble)
 
     val sourceId: VertexId = 42 // The ultimate source
     // Initialize the graph such that all vertices except the root have distance infinity.
-    val initialGraph = graph.mapVertices((id, _) => if (id == sourceId) 0.0 else Double.PositiveInfinity)
+    val initialGraph = graph.mapVertices((id, _) => {
+      if (id == sourceId) 0.0 else Double.PositiveInfinity
+    })
     val sssp = initialGraph.pregel(Double.PositiveInfinity)(
       (id, dist, newDist) => math.min(dist, newDist), // Vertex Program
       triplet => {  // Send Message
@@ -62,7 +63,7 @@ object PregelOperationApp {
       (a,b) => math.min(a,b) // Merge Message
     )
 
-    println("vertices count: "+sssp.vertices.count())
+    println("vertices count: " + sssp.vertices.count())
     sc.stop()
   }
 }

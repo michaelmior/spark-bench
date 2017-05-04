@@ -1,4 +1,3 @@
-
 /*
  * (C) Copyright IBM Corp. 2015
  *
@@ -22,15 +21,15 @@ import java.io.PrintWriter
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
 import org.apache.spark.{SparkContext,SparkConf}
-import org.apache.spark.SparkContext._
-import org.apache.spark.graphx._
-import org.apache.spark.graphx.lib._
+import org.apache.spark.graphx.GraphLoader
+import org.apache.spark.graphx.lib.ShortestPaths
 import org.apache.spark.graphx.util.GraphGenerators
-import org.apache.spark.rdd._
 import org.apache.spark.storage.StorageLevel
-import org.json4s.JsonDSL._
-import org.json4s.jackson.JsonMethods._
+import org.json4s.jackson.JsonMethods.{compact, render}
 
+// scalastyle:off underscore.import
+import org.json4s.JsonDSL._
+// scalastyle:on underscore.import
 
 object ShortestPathsApp {
 
@@ -52,7 +51,7 @@ object ShortestPathsApp {
     val numVertices= args(3).toInt
     val storageLevel= args(4)
 
-    var sl:StorageLevel = StorageLevel.fromString(storageLevel)
+    var sl: StorageLevel = StorageLevel.fromString(storageLevel)
     val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, sl, sl)
     graph.edges.setName("SPEdges")
     graph.vertices.setName("SPVertices")
@@ -67,6 +66,6 @@ object ShortestPathsApp {
     val jsonStr = compact(render(Map("computeTime" -> computeTime)))
     new PrintWriter("out/" + storageLevel + "-" + numVertices + ".json") { write(jsonStr); close }
 
-    sc.stop();
+    sc.stop()
   }
 }

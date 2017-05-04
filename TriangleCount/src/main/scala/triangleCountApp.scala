@@ -1,4 +1,3 @@
-
 /*
  * (C) Copyright IBM Corp. 2015
  *
@@ -19,12 +18,8 @@ package src.main.scala
 
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
-import org.apache.spark.{SparkContext,SparkConf}
-import org.apache.spark.SparkContext._
-import org.apache.spark.graphx._
-import org.apache.spark.graphx.lib._
-import org.apache.spark.graphx.util.GraphGenerators
-import org.apache.spark.rdd._
+import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.graphx.{GraphLoader, PartitionStrategy}
 import org.apache.spark.storage.StorageLevel
 
 
@@ -47,16 +42,18 @@ object triangleCountApp {
     val minEdge = args(2).toInt
     val storageLevel=args(3)
 
-    var sl:StorageLevel=StorageLevel.MEMORY_ONLY;
-    if(storageLevel=="MEMORY_AND_DISK_SER")
-      sl=StorageLevel.MEMORY_AND_DISK_SER
-    else if(storageLevel=="MEMORY_AND_DISK")
-      sl=StorageLevel.MEMORY_AND_DISK
+    var sl: StorageLevel=StorageLevel.MEMORY_ONLY;
+    if (storageLevel == "MEMORY_AND_DISK_SER") {
+      sl = StorageLevel.MEMORY_AND_DISK_SER
+    } else if (storageLevel=="MEMORY_AND_DISK") {
+      sl = StorageLevel.MEMORY_AND_DISK
+    }
 
-    val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, sl, sl).partitionBy(PartitionStrategy.RandomVertexCut)
+    val graph = GraphLoader.edgeListFile(sc, input, true, minEdge, sl, sl)
+      .partitionBy(PartitionStrategy.RandomVertexCut)
 
     val triCounts = graph.triangleCount().vertices
-    println("num triangles are "+triCounts.count());
-    sc.stop();
+    println("num triangles are " + triCounts.count())
+    sc.stop()
   }
 }

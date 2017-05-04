@@ -21,15 +21,19 @@ import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.storage.StorageLevel
+import org.json4s.jackson.JsonMethods.{compact, render}
+
+// scalastyle:off underscore.import
 import org.json4s.JsonDSL._
-import org.json4s.jackson.JsonMethods._
+// scalastyle:on underscore.import
 
 object KmeansApp {
   def main(args: Array[String]) {
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
     Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF);
     if (args.length < 5) {
-      println("usage: <logFile> <input> <output> <numClusters> <maxIterations> <storageLevel> <runs> - optional")
+      println("usage: <input> <output> <numClusters> " +
+              "<maxIterations> <storageLevel> <runs> - optional")
       System.exit(0)
     }
     val conf = new SparkConf
@@ -48,14 +52,15 @@ object KmeansApp {
     // val parsedData = sc.textFile(input)
     var start = System.currentTimeMillis();
     val data = sc.textFile(input)
-    var sl:StorageLevel = StorageLevel.fromString(storageLevel)
+    var sl: StorageLevel = StorageLevel.fromString(storageLevel)
     val parsedData = data.map(s => Vectors.dense(s.split(' ').map(_.toDouble))).persist(sl)
     parsedData.setName("KMInput")
     val loadTime = (System.currentTimeMillis() - start).toDouble / 1000.0
 
     // Cluster the data into two classes using KMeans
     start = System.currentTimeMillis();
-    val clusters: KMeansModel = KMeans.train(parsedData, K, maxIterations, runs, KMeans.K_MEANS_PARALLEL, seed = 127L)
+    val clusters: KMeansModel = KMeans.train(parsedData, K, maxIterations,
+      runs, KMeans.K_MEANS_PARALLEL, seed = 1L)
     val trainingTime = (System.currentTimeMillis() - start).toDouble / 1000.0
     println("cluster centers: " + clusters.clusterCenters.mkString(","))
 
@@ -85,7 +90,6 @@ object KmeansApp {
   }
 
   def calculateRuns(args: Array[String]): Int = {
-    if (args.length > 6) args(6).toInt
-    else 1
+    if (args.length > 6) args(6).toInt else 1
   }
 }

@@ -1,4 +1,3 @@
-
 /*
  * (C) Copyright IBM Corp. 2015
  *
@@ -18,12 +17,8 @@
 package DataGen.src.main.scala
 import org.apache.log4j.Logger
 import org.apache.log4j.Level
-import org.apache.spark.{SparkContext,SparkConf}
-import org.apache.spark.SparkContext._
-import org.apache.spark.graphx._
-import org.apache.spark.graphx.lib._
+import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.graphx.util.GraphGenerators
-import org.apache.spark.rdd._
 
 object GraphDataGen {
   def main(args: Array[String]) {
@@ -44,9 +39,9 @@ object GraphDataGen {
     val sigma = args(4).toDouble
 
     val graph = GraphGenerators.logNormalGraph(sc, numVertices, numPar, mu, sigma)
-    //val graph= GraphGenerators.gridGraph(sc,numVertices,numVertices)
-    graph.edges.map(s => s.srcId.toString + " " + s.dstId.toString + " " + s.attr.toString).saveAsTextFile(output)
+    graph.edges.map(s => s.srcId.toString + " " + s.dstId.toString + " " + s.attr.toString)
+      .saveAsTextFile(output)
 
-    sc.stop();
+    sc.stop()
   }
 }

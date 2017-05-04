@@ -37,10 +37,11 @@ object KmeansDataGen {
     val numCluster = args(2).toInt
     val numDim = args(3).toInt
     val scaling = args(4).toDouble
-    val defPar = if (System.getProperty("spark.default.parallelism") == null) 2 else System.getProperty("spark.default.parallelism").toInt
+    val defPar = System.getProperty("spark.default.parallelism", "2").toInt
     val numPar = if (args.length > 5) args(5).toInt else defPar
 
-    val data = KMeansDataGenerator.generateKMeansRDD(sc, numPoint, numCluster, numDim, scaling, numPar)
+    val data = KMeansDataGenerator.generateKMeansRDD(sc, numPoint, numCluster, numDim,
+      scaling, numPar)
     data.map(_.mkString(" ")).saveAsTextFile(output)
 
     sc.stop();
