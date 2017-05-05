@@ -163,7 +163,7 @@ function run_with_stats() {
   json=$(cat $json_log)
   json=$(add_event_log "$json")
   input_size=$(${HADOOP_HOME}/bin/hdfs dfs -ls ${INPUT_HDFS}/part-* | awk '{ sum += $5 } END { print sum }')
-  input_size=$((input_size / 1024))
+  output_size=$(${HADOOP_HOME}/bin/hdfs dfs -ls ${OUTPUT_HDFS}/part-* | awk '{ sum += $5 } END { print sum }')
   json=$(add_to_json "$json" inputSize "$input_size")
   json=$(add_to_json "$json" beforeStats "$before_stats")
   json=$(add_to_json "$json" afterStats "$after_stats")
